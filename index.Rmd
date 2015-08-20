@@ -1,0 +1,60 @@
+---
+title: "GDP, CPI, and Unemployment"
+output: html_document
+---
+
+To install the datasets:
+
+```{r, eval = FALSE}
+devtools::install_github('adamacosta/gdp')
+```
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::knit_hooks$set(htmlcap = function(before, options, envir) {
+    if (!before) {
+        paste0('<p class="caption">', options$htmlcap, '</p>')
+    }
+})
+```
+
+```{r}
+library(ggvis)
+library(dplyr)
+library(tidyr)
+
+data(gdp, package = 'gdp')
+data(cpi, package = 'gdp')
+data(unemp, package = 'gdp')
+```
+
+## GDP and CPI
+
+```{r}
+gdp
+cpi
+```
+
+```{r, htmlcap = 'Figure 1. GDP and CPI'}
+gdp %>%
+    left_join(cpi) %>%
+    transmute(period = period, 
+              gdp = gdp.chained.2009 / gdp.chained.2009[1],
+              cpi = index / index[1]) %>%
+    gather(measure, index, -period) %>%
+    ggvis(~period, ~index, stroke = ~measure) %>%
+    add_axis('y', title = 'Change from 1948')
+```
+
+### Unemployment
+
+```{r}
+unemp
+```
+
+```{r, htmlcap = 'Figure 2. Unemployment'}
+unemp %>%
+    ggvis(~period, ~value) %>%
+    layer_lines(stroke := 'steelblue') %>%
+    add_axis('y', title = 'Percent Unemployed')
+```
